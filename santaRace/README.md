@@ -3,7 +3,7 @@ Assignments of week 3
 santaRace made by Uree1229
 ----
 
-**contents
+**contents**
 1. move santa only use keybord (one press move 20)
 2. timer : 30s
 3. santa only move in x: 0 ~ 1280, y: 300 ~ 650
