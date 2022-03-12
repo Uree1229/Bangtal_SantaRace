@@ -3,13 +3,13 @@
 
 using namespace std;
 
-TimerID timer1, timer2;
-SceneID scene1;
-ObjectID startButton, endButton, santa, cloud;
+TimerID timer1;
+SceneID scene1, scene2;
+ObjectID startButton, endButton,endButton_p, santa, santa1, cloud;
 
 
 
-int santaX = 0, santaY = 500, start = 0, cloudX, cloudY;
+int santaX = 0, santaY = 500, santaX_1 = 0, santaY_1 = 200, start = 0, cloudX, cloudY;
 
 ObjectID createObject(const char* image, SceneID scene, int x, int y, bool shown) {
 
@@ -22,6 +22,7 @@ ObjectID createObject(const char* image, SceneID scene, int x, int y, bool shown
 	}
 	return object;
 }
+
 void cloud_create_random(int num) { //구름생성함수
 
 	random_device rdx;
@@ -43,6 +44,18 @@ void cloud_create_random(int num) { //구름생성함수
 	}
 
 }
+void reset() {
+	
+	setObjectImage(startButton, "Images/restart.png");
+
+	showObject(startButton);
+	showObject(endButton);
+
+	start = 0;
+	santaX = 0;
+	locateObject(santa, scene1, santaX, santaY);
+	stopTimer(timer1);
+}
 void endGame(bool success) {
 
 	if (success == true) {
@@ -51,15 +64,34 @@ void endGame(bool success) {
 	else {
 		showMessage("배달을 실패했습니다 ㅠㅠ");
 	}
-
-	setObjectImage(startButton, "Images/restart.png");
-	showObject(startButton);
-	showObject(endButton);
-	start = 0;
-	santaX = 0;
-	locateObject(santa, scene1, santaX, santaY);
-	stopTimer(timer1);
+	reset();
+	
 }
+void startGame() {
+	hideObject(startButton);
+	hideObject(endButton);
+
+	showMessage("방향키를 사용하여 산타를 움직을 수 있습니다!");
+	start = 1;
+	setTimer(timer1, 20.0f);
+	startTimer(timer1);
+}
+void pauseGame() {
+	stopTimer(timer1);
+	start = 0;
+	enterScene(scene2);
+	endButton_p = createObject("Images/end.png", scene2, 590, 20, true);
+	showMessage("");
+}
+void resumeGame() {
+	startTimer(timer1);
+	start = 1;
+	enterScene(scene1);
+}
+
+
+
+
 void keybord_Callback(KeyCode key, KeyState state) { //키보드 제어 함수
 
 	if (start == 1) {
@@ -76,7 +108,16 @@ void keybord_Callback(KeyCode key, KeyState state) { //키보드 제어 함수
 			else if (key == KeyCode::KEY_LEFT_ARROW) {
 				santaX = santaX - 20;
 			}
+			else if (key == KeyCode::KEY_SPACE) {
+				pauseGame();
+			}
 		}
+	}
+	else if (start == 0) {
+		if (key == KeyCode::KEY_ESCAPE) {
+			resumeGame();
+		}
+
 	}
 
 	locateObject(santa, scene1, santaX, santaY);
@@ -97,16 +138,6 @@ void keybord_Callback(KeyCode key, KeyState state) { //키보드 제어 함수
 		santaY = 300;
 	}
 }
-void startGame() {
-	hideObject(startButton);
-	hideObject(endButton);
-
-	showMessage("방향키를 사용하여 산타를 움직을 수 있습니다!");
-	
-	start = 1;
-	setTimer(timer1, 30.0f);
-	startTimer(timer1);
-}
 void mouse_Callback(ObjectID object, int x, int y, MouseAction action) {
 	
 	if (start == 1) {
@@ -119,7 +150,7 @@ void mouse_Callback(ObjectID object, int x, int y, MouseAction action) {
 		}
 	}
 	else if (start == 0) {
-		if (object == endButton) {
+		if (object == endButton || object == endButton_p) {
 			endGame();
 			
 
@@ -137,10 +168,7 @@ void timer_Callback(TimerID timer) {
 
 		endGame(false);
 	}
-	else if (timer == timer2) {
-		setSceneImage(scene1, "Images/background.png");
-		setTimer(timer2, 1.0f);
-	}
+	
 }
 
 
@@ -152,13 +180,16 @@ int main(){
 	
 
 	scene1 = createScene("santaRace", "Images/background.png");
-
+	scene2 = createScene("pause", "Images/pause.png");
 	startButton = createObject("Images/start.png", scene1, 590, 70, true);
 	endButton = createObject("Images/end.png", scene1, 590, 20, true);
+	
 	santa = createObject("Images/santa.png", scene1, santaX, santaY, true);
-	scaleObject(santa, 0.5f);
-	timer1 = createTimer(30.0f);
-	showTimer(timer1);
 
+	scaleObject(santa, 0.5f);
+	timer1 = createTimer(20.0f);
+	
+	showTimer(timer1);
+	
 	startGame(scene1);
 }
