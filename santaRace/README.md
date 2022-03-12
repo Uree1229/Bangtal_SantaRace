@@ -1,6 +1,6 @@
 Assignments of week 3 
 ====
-santaRace made by Uree1229
+santaRace made by Uree1229  (https://github.com/Uree1229/bangtal_Library)
 ----
 
 **contents**
