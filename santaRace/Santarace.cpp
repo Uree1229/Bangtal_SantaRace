@@ -3,9 +3,11 @@
 
 using namespace std;
 
-TimerID timer1;
+TimerID timer1, timer2;
 SceneID scene1;
 ObjectID startButton, endButton, santa, cloud;
+
+
 
 int santaX = 0, santaY = 500, start = 0, cloudX, cloudY;
 
@@ -19,7 +21,29 @@ ObjectID createObject(const char* image, SceneID scene, int x, int y, bool shown
 		showObject(object);
 	}
 	return object;
-}void endGame(bool success) {
+}
+void cloud_create_random(int num) { //구름생성함수
+
+	random_device rdx;
+	random_device rdy;
+	
+	mt19937_64 rdX(rdx());
+	mt19937_64 rdY(rdy());
+
+	uniform_int_distribution<int> disX(150, 1100);
+	uniform_int_distribution<int> disY(300, 650);
+
+
+	for (int i = 0; i < num; i++) {
+		cloudX = disX(rdX);
+		cloudY = disY(rdY);
+		cloud = createObject("Images/cloud.png", scene1, cloudX, cloudY, true);
+		scaleObject(cloud, 0.055f);
+
+	}
+
+}
+void endGame(bool success) {
 
 	if (success == true) {
 		showMessage("배달에 성공했습니다!");
@@ -36,7 +60,6 @@ ObjectID createObject(const char* image, SceneID scene, int x, int y, bool shown
 	locateObject(santa, scene1, santaX, santaY);
 	stopTimer(timer1);
 }
-
 void keybord_Callback(KeyCode key, KeyState state) { //키보드 제어 함수
 
 	if (start == 1) {
@@ -55,7 +78,6 @@ void keybord_Callback(KeyCode key, KeyState state) { //키보드 제어 함수
 			}
 		}
 	}
-	
 
 	locateObject(santa, scene1, santaX, santaY);
 	if (santaX > 1280) {
@@ -87,42 +109,47 @@ void startGame() {
 }
 void mouse_Callback(ObjectID object, int x, int y, MouseAction action) {
 	
-	if (object == endButton) {
-		endGame();
-	
-	}else if (object == startButton){
-		 startGame();
+	if (start == 1) {
+		
+		if (object != santa) {
+			hideObject(object);   //구름 지우기
+		}
+		else if (object == santa) {
+			showMessage("산타는 지울수 없습니다!");
+		}
 	}
+	else if (start == 0) {
+		if (object == endButton) {
+			endGame();
+			
+
+		}
+		else if (object == startButton) {
+			startGame();
+			showObject(cloud);
+			cloud_create_random(10);
+		}
+	}
+	
 }
 void timer_Callback(TimerID timer) {
 	if (timer == timer1) {
 
 		endGame(false);
 	}
-}
-void cloud_create_random(int num) { //구름생성함수
-
-	mt19937_64 rdX(3244);
-	mt19937_64 rdY(3244);
-
-	uniform_int_distribution<int> disX(150, 1280);
-	uniform_int_distribution<int> disY(300, 650);
-
-
-	for (int i = 0; i < num; i++) {
-
-		cloudX = disX(rdX);
-		cloudY = disY(rdY);
-
-		cloud = createObject("Images/cloud.png", scene1, cloudX, cloudY, true);
-		scaleObject(cloud, 0.055f);
+	else if (timer == timer2) {
+		setSceneImage(scene1, "Images/background.png");
+		setTimer(timer2, 1.0f);
 	}
-} 
+}
+
+
 
 int main(){
 	setKeyboardCallback(keybord_Callback);
 	setMouseCallback(mouse_Callback);
 	setTimerCallback(timer_Callback);
+	
 
 	scene1 = createScene("santaRace", "Images/background.png");
 
@@ -130,9 +157,6 @@ int main(){
 	endButton = createObject("Images/end.png", scene1, 590, 20, true);
 	santa = createObject("Images/santa.png", scene1, santaX, santaY, true);
 	scaleObject(santa, 0.5f);
-
-	cloud_create_random(30);
-
 	timer1 = createTimer(30.0f);
 	showTimer(timer1);
 
